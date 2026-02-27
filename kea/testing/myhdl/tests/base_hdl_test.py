@@ -51,23 +51,27 @@ class HDLTestCase(TestCase):
 
     def do_port_check_intbv_test(self, constructor, port_name, width=None,
                                  signed=False, val_range=None,
-                                 attribute=None):
+                                 attribute=None, dut_args=None):
         '''Checks the intbv port test was performed on the specified port
         with the given port name and width. If attribute is not None,
         then the specified attribute on the given port name is used (e.g.
         for interfaces).
         '''
+
+        if dut_args is None:
+            dut_args = self.default_args
+
         if attribute is None:
-            port_to_check = self.default_args[port_name]
+            port_to_check = dut_args[port_name]
         else:
-            port_to_check = getattr(self.default_args[port_name], attribute)
+            port_to_check = getattr(dut_args[port_name], attribute)
             port_name += '.%s' % (attribute,)
 
         patch_location = constructor.__module__ + '.check_intbv_signal'
         with patch(patch_location) as (mock_check_function):
 
             # Make the call
-            constructor(**self.default_args)
+            constructor(**dut_args)
 
             mock_check_function.call_args_list
 
@@ -83,24 +87,32 @@ class HDLTestCase(TestCase):
                     mock_check_function.call_args_list)
 
 
-    def do_port_check_bool_test(self, constructor, port_name):
+    def do_port_check_bool_test(self, constructor, port_name, dut_args=None):
         '''Checks the bool port test was performed on the specified port
         with the given port name.
         '''
-        port_to_check = self.default_args[port_name]
+
+        if dut_args is None:
+            dut_args = self.default_args
+
+        port_to_check = dut_args[port_name]
 
         patch_location = constructor.__module__ + '.check_bool_signal'
         with patch(patch_location) as (mock_check_function):
 
             # Make the call
-            constructor(**self.default_args)
+            constructor(**dut_args)
             self.assertIn(call(port_to_check, port_name),
                           mock_check_function.call_args_list)
 
-    def do_port_check_reset_test(self, constructor, port_name, active, isasync):
+    def do_port_check_reset_test(
+        self, constructor, port_name, active, isasync, dut_args=None):
         '''Checks the reset port test was performed on the specified port
         with the given port name.
         '''
+        if dut_args is None:
+            dut_args = self.default_args
+
         port_to_check = self.default_args[port_name]
 
         patch_location = constructor.__module__ + '.check_reset_signal'

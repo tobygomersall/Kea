@@ -32,16 +32,20 @@ def test_args_setup(
 
     args = {
         'clock': Signal(False),
-        'enable': Signal(False),
+        'reset': Signal(False),
+        'signal_in_valid': Signal(False),
         'signal_in': signal_in,
+        'signal_out_valid': Signal(False),
         'signal_out': signal_out,
         'slice_offset': slice_offset,
     }
 
     arg_types = {
         'clock': 'clock',
-        'enable': 'custom',
+        'reset': 'custom',
+        'signal_in_valid': 'custom',
         'signal_in': 'custom',
+        'signal_out_valid': 'output',
         'signal_out': 'output',
         'slice_offset': 'non-signal',
     }
@@ -221,7 +225,8 @@ class TestSynchronousSaturatingRoundingSlicer(KeaTestCase):
     def stim(self, **dut_args):
 
         clock = dut_args['clock']
-        enable = dut_args['enable']
+        reset = dut_args['reset']
+        signal_in_valid = dut_args['signal_in_valid']
         signal_in = dut_args['signal_in']
         signal_out = dut_args['signal_out']
         slice_offset = dut_args['slice_offset']
@@ -343,13 +348,13 @@ class TestSynchronousSaturatingRoundingSlicer(KeaTestCase):
         @always(clock.posedge)
         def stim_input():
 
-            if enable:
+            if signal_in_valid:
                 if random.random() < 0.03:
-                    enable.next = False
+                    signal_in_valid.next = False
 
             else:
                 if random.random() < 0.05:
-                    enable.next = True
+                    signal_in_valid.next = True
 
             random_val = random.random()
 
@@ -370,6 +375,9 @@ class TestSynchronousSaturatingRoundingSlicer(KeaTestCase):
             # Drive signal_in with the input_val
             signal_in.next = input_val
 
+            if random.random() < 0.1:
+                reset.next = not reset
+
         return_objects.append(stim_input)
 
         return return_objects
@@ -378,8 +386,10 @@ class TestSynchronousSaturatingRoundingSlicer(KeaTestCase):
     def check(self, **dut_args):
 
         clock = dut_args['clock']
-        enable = dut_args['enable']
+        reset = dut_args['reset']
+        signal_in_valid = dut_args['signal_in_valid']
         signal_in = dut_args['signal_in']
+        signal_out_valid = dut_args['signal_out_valid']
         signal_out = dut_args['signal_out']
         slice_offset = dut_args['slice_offset']
 
@@ -393,22 +403,28 @@ class TestSynchronousSaturatingRoundingSlicer(KeaTestCase):
                 0, min=signal_out_incl_lower_bound,
                 max=signal_out_excl_upper_bound)))
 
+        expected_signal_out_valid = Signal(False)
+
         @always(clock.posedge)
         def check_output():
 
-            input_val = int(signal_in.val)
+            assert(signal_out_valid == expected_signal_out_valid)
+            assert(signal_out == expected_signal_out)
 
-            if enable:
+            expected_signal_out_valid.next = signal_in_valid
+
+            if signal_in_valid:
                 # Update the expected_signal_out
                 expected_signal_out.next = (
                     round_and_saturate(
-                        input_val, signal_out_incl_lower_bound,
+                        int(signal_in.val), signal_out_incl_lower_bound,
                         signal_out_excl_upper_bound, slice_offset))
 
+            if signal_out_valid:
                 self.test_count += 1
 
-            # Check that signal out always equals the expected output
-            assert(signal_out == expected_signal_out)
+            if reset:
+                expected_signal_out_valid.next = False
 
         return_objects.append(check_output)
 
@@ -454,6 +470,28 @@ class TestSynchronousSaturatingRoundingSlicer(KeaTestCase):
 
         self.assertTrue(self.tests_complete)
         self.assertEqual(dut_outputs, ref_outputs)
+
+    def test_reset(self):
+        ''' When `reset` is high, `synchronous_saturating_rounding_slicer`
+        should set `signal_out_valid` low.
+        '''
+        self.base_test(
+            signed_input=bool(random.randrange(2)),
+            signed_output=bool(random.randrange(2)))
+
+    def test_validity(self):
+        ''' When `signal_in_valid` is set high, the
+        `synchronous_saturating_rounding_slicer` should saturate, round and
+        slice `signal_in` and assign it to `signal_out` and set
+        `signal_out_valid` high.
+
+        When `signal_in_valid` is low, the
+        `synchronous_saturating_rounding_slicer` should set `signal_out_valid`
+        low.
+        '''
+        self.base_test(
+            signed_input=bool(random.randrange(2)),
+            signed_output=bool(random.randrange(2)))
 
     ##################################
     # Zero offset, direct assignment #

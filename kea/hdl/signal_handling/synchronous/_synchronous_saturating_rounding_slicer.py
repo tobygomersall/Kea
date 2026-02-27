@@ -63,10 +63,14 @@ def intbv_signal_bounds(signal):
 
 @block
 def synchronous_saturating_rounding_slicer(
-    clock, enable, signal_in, signal_out, slice_offset):
-    ''' This block will slice `signal_in` and assign it to `signal_out`. The
-    offset of the slice is set by `slice_offset`. The length of the slice is
-    set by the length of `signal_out`.
+    clock, reset, signal_in_valid, signal_in, signal_out_valid, signal_out,
+    slice_offset):
+    ''' If `signal_in_valid` is high, this block will slice `signal_in` and
+    assign it to `signal_out` and set `signal_out_valid`. If `signal_in_valid`
+    is low then this block will set `signal_out_valid` low.
+
+    The offset of the slice is set by `slice_offset`. The length of the slice
+    is set by the length of `signal_out`.
 
     Lets call the bits up to `slice_offset` the fractional bits.
 
@@ -148,8 +152,13 @@ def synchronous_saturating_rounding_slicer(
             @always(clock.posedge)
             def assigner():
 
-                if enable:
+                signal_out_valid.next = signal_in_valid
+
+                if signal_in_valid:
                     signal_out.next = signal_in
+
+                if reset:
+                    signal_out_valid.next = False
 
             return_objects.append(assigner)
 
@@ -171,7 +180,9 @@ def synchronous_saturating_rounding_slicer(
             @always(clock.posedge)
             def saturator():
 
-                if enable:
+                signal_out_valid.next = signal_in_valid
+
+                if signal_in_valid:
                     if signal_in >= signal_out_upper_bound_const:
                         # signal_in is greater than or equal to the exclusive
                         # upper bound of signal_in so we saturate the output
@@ -186,6 +197,9 @@ def synchronous_saturating_rounding_slicer(
 
                     else:
                         signal_out.next = signal_in
+
+                if reset:
+                    signal_out_valid.next = False
 
             return_objects.append(saturator)
 
@@ -238,7 +252,9 @@ def synchronous_saturating_rounding_slicer(
         @always(clock.posedge)
         def slicer():
 
-            if enable:
+            signal_out_valid.next = signal_in_valid
+
+            if signal_in_valid:
 
                 if integer_slice >= signal_out_upper_saturation_const:
                     # After removing the fractional bits, the signal_in is
@@ -272,6 +288,9 @@ def synchronous_saturating_rounding_slicer(
                 else:
                     # Round down
                     signal_out.next = integer_slice
+
+            if reset:
+                signal_out_valid.next = False
 
         return_objects.append(slicer)
 
