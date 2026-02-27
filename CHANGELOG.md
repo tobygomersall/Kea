@@ -3,6 +3,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.10.0 - 2026-02-27
+
+### Changed
+
+- Added a `signal_out_valid` signal to `kea.hdl.signal_handling.synchronous.synchronous_saturating_rounding_slicer`.
+
+### Added
+
+- Added interface checks so blocks can check ports are correct.
+
 ## 0.9.3 - 2026-01-21
 
 ### Changed
