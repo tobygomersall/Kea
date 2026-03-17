@@ -2,8 +2,8 @@ import myhdl
 
 from myhdl import intbv
 
-def check_bool_signal(test_signal, name):
-    '''Check the `test_signal` is valid.
+def check_bool_or_intbv_signal(test_signal, name):
+    '''Check the `test_signal` is a bool signal or an intbv signal.
     '''
 
     assert(isinstance(name, str))
@@ -14,8 +14,13 @@ def check_bool_signal(test_signal, name):
 
     if not isinstance(test_signal.val, (intbv, bool)):
         raise TypeError(
-            'Port %s signal should be a boolean or a single bit intbv signal.'
-            % (name,))
+            'Port %s signal should be a boolean or intbv signal.' % (name,))
+
+def check_bool_signal(test_signal, name):
+    '''Check the `test_signal` is a bool signal or a 1 bit intbv.
+    '''
+
+    check_bool_or_intbv_signal(test_signal, name)
 
     if isinstance(test_signal.val, intbv) and len(test_signal) != 1:
         raise TypeError (
@@ -59,6 +64,8 @@ def check_intbv_signal(
 
     If `val_range` is None, this function will not check the value range.
     '''
+
+    assert(isinstance(name, str))
 
     if not isinstance(test_signal, myhdl._Signal._Signal):
         raise TypeError('Port %s should be a Signal.' % (name,))

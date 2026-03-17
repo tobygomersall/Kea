@@ -1,7 +1,6 @@
 from myhdl import block, intbv, always
 
 from kea.hdl.logic.asynchronous import vector_xor, reducing_or, not_gate
-from kea.hdl.signal_handling import synchronous_signal_assigner
 
 @block
 def equality_detector(clock, enable, equal, input_0, input_1):

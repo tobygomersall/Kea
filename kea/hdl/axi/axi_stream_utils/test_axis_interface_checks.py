@@ -6,7 +6,7 @@ from unittest import TestCase
 from kea.hdl.axi import AxiStreamInterface
 from kea.testing.test_utils import random_string_generator
 
-from .axis_utils import (
+from .axis_interface_checks import (
     axis_interface_attributes, check_axi_stream_interfaces_identical,
     check_axi_stream_interface_attributes)
 

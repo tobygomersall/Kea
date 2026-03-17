@@ -1,0 +1,1 @@
+from ._sync_sig_assigner import sync_sig_assigner
