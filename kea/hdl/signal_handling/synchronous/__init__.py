@@ -2,3 +2,6 @@ from ._synchronous_signal_assigner import synchronous_signal_assigner
 from ._synchronous_signal_slicer import synchronous_signal_slicer
 from ._synchronous_saturating_rounding_slicer import (
     synchronous_saturating_rounding_slicer)
+from .sync_left_shift_block import sync_left_shift
+from .sync_sig_assigner_block import sync_sig_assigner
+from .sync_sig_assigner_with_reset_block import sync_sig_assigner_with_reset

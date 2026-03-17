@@ -4,7 +4,46 @@ from unittest import TestCase
 
 from myhdl import Signal, intbv
 
-from .interface_checks import check_bool_signal, check_intbv_signal
+from .interface_checks import (
+    check_bool_or_intbv_signal, check_bool_signal, check_intbv_signal)
+
+class TestCheckBoolOrIntbvSignal(TestCase):
+
+    def setUp(self):
+
+        self.dut_args = {
+            'test_signal': Signal(False),
+            'name': 'test_name',
+        }
+
+    def test_non_signal(self):
+        '''The `check_bool_or_intbv_signal` function should raise an error if
+        `test_signal` is not an instance of `myhdl._Signal._Signal`.
+        '''
+
+        self.dut_args['test_signal'] = 'this is not a signal'
+
+        self.assertRaisesRegex(
+            TypeError,
+            ('Port %s should be a Signal.' % (self.dut_args['name'],)),
+            check_bool_or_intbv_signal,
+            **self.dut_args
+        )
+
+    def test_invalid_signal(self):
+        '''The `check_bool_or_intbv_signal` function should raise an error if
+        `test_signal` is not a bool signal or an intbv signal.
+        '''
+
+        self.dut_args['test_signal'] = Signal(0)
+
+        self.assertRaisesRegex(
+            TypeError,
+            ('Port %s signal should be a boolean or intbv signal.' %
+             (self.dut_args['name'],)),
+            check_bool_or_intbv_signal,
+            **self.dut_args
+        )
 
 class TestCheckBoolSignal(TestCase):
 
@@ -38,8 +77,8 @@ class TestCheckBoolSignal(TestCase):
 
         self.assertRaisesRegex(
             TypeError,
-            ('Port %s signal should be a boolean or a single bit intbv '
-             'signal.' % (self.dut_args['name'],)),
+            ('Port %s signal should be a boolean or intbv signal.' %
+             (self.dut_args['name'],)),
             check_bool_signal,
             **self.dut_args
         )

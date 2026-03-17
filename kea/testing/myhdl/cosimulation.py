@@ -1,7 +1,4 @@
 from .hdl_blocks import *
-from kea.hdl.axi import (
-    AxiStreamSlaveBFM, axi_stream_buffer, axi_master_playback,
-    AxiStreamInterface)
 
 from myhdl import *
 
@@ -1063,6 +1060,8 @@ class Args(object):
                         'Signal is set to "axi_stream_in", but is not in an '
                         'interface: {}'.format(arg.name))
 
+                from kea.hdl.axi import AxiStreamInterface
+
                 if not isinstance(arg.parent_interface, AxiStreamInterface):
                     raise ValueError(
                         'Signal is set to "axi_stream_in", but is not in an '
@@ -1087,6 +1086,8 @@ class Args(object):
                     raise ValueError(
                         'Signal is set to "axi_stream_out", but is not in an '
                         'interface: {}'.format(arg.name))
+
+                from kea.hdl.axi import AxiStreamInterface
 
                 if not isinstance(arg.parent_interface, AxiStreamInterface):
                     raise ValueError(
@@ -1507,6 +1508,8 @@ class SynchronousTest(object):
         self.axi_stream_in_ref_interfaces = {}
         self.axi_stream_in_buffer_factories = []
 
+        from kea.hdl.axi import AxiStreamSlaveBFM
+
         for each_interface in ref_axi_stream_in_interfaces:
             TREADY_probability = None
 
@@ -1523,6 +1526,8 @@ class SynchronousTest(object):
 
             if dut_factory is not None:
                 dut_axi_intfc = dut_axi_stream_in_interfaces[each_interface]
+
+                from kea.hdl.axi import axi_stream_buffer
 
                 self.axi_stream_in_buffer_factories.append(
                     (axi_stream_buffer,
@@ -1883,6 +1888,8 @@ class SynchronousTest(object):
             axi_interface = axi_stream_in_dut_interfaces[
                 axi_interface_name]
             signal_record = axi_bfm.signal_record
+
+            from kea.hdl.axi import axi_master_playback
 
             instances.append(
                 axi_master_playback(clock, axi_interface, signal_record))

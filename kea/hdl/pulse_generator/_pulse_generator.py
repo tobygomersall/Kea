@@ -1,8 +1,5 @@
 from myhdl import *
 
-from kea.hdl.signal_handling import (
-    synchronous_signal_assigner, signal_assigner)
-
 @block
 def pulse_generator(clock, reset, trigger, output, pulse_n_cycles):
     ''' Implements a pulse generator. On receipt of a high on the trigger

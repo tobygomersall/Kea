@@ -4,7 +4,7 @@ from unittest.mock import patch, call
 
 from .interface_checks import check_bool_signal, check_intbv_signal
 
-def _normalise_call(func, args, kwargs):
+def _normalise_function_call_args(func, args, kwargs):
     ''' Normalise the call so we can compare calls to the `func`.
 
     This converts the call arguments to a consistent form irrespective of
@@ -17,7 +17,7 @@ def _normalise_call(func, args, kwargs):
 
     return bound.arguments
 
-def _get_dut_function_call_arguments(func, dut, dut_args):
+def get_dut_function_call_arguments(func, dut, dut_args):
     ''' Get the arguments used when the `dut` called `func`.
     '''
 
@@ -30,101 +30,73 @@ def _get_dut_function_call_arguments(func, dut, dut_args):
 
         # Normalise all calls to func
         normalised_arguments_list = [
-            _normalise_call(func, args, kwargs)
+            _normalise_function_call_args(func, args, kwargs)
             for args, kwargs in mock_check_function.call_args_list]
 
     return normalised_arguments_list
 
-def get_dut_check_bool_signal_call_arguments(dut, dut_args):
-    ''' Get the arguments used when the `dut` called `check_bool_signal`.
+def verify_dut_called_function(
+    func, dut_function_call_arguments_list, expected_args_dict,
+    port_under_test_arg_name, port_under_test_name):
+    '''Verify that `dut_function_call_arguments_list` contains a call to
+    `func` with the args specified by `expected_args_dict`.
+
+    `dut_function_call_arguments_list` should be the list returned by
+    `get_dut_function_call_arguments`.
+
+    `expected_args_dict` should be a dict of the expected arguments in which
+    the key is the argument name. If you don't care what value is passed to
+    func for any of the arguments then do not include it in
+    `expected_args_dict`.
+
+    `port_under_test_arg_name` should be the name of the argument under which
+    the port is passed to `func`. Note: `expected_args_dict` should also
+    contain this key. For example if we were calling
+    `.interface_checks.check_bool_signal` which has arguments `'test_signal'`
+    and `'name'` then the `port_under_test_arg_name` would be `'test_signal'`.
+
+    `port_under_test_name` should be a string. This is used to clarify any
+    errors raised.
     '''
-    dut_check_bool_signal_call_arguments_list = (
-        _get_dut_function_call_arguments(check_bool_signal, dut, dut_args))
+    dut_arguments_list = dut_function_call_arguments_list
 
-    return dut_check_bool_signal_call_arguments_list
-
-def get_dut_check_intbv_signal_call_arguments(dut, dut_args):
-    ''' Get the arguments used when the `dut` called `check_intbv_signal`.
-    '''
-    dut_check_intbv_signal_call_arguments_list = (
-        _get_dut_function_call_arguments(check_intbv_signal, dut, dut_args))
-
-    return dut_check_intbv_signal_call_arguments_list
-
-def verify_dut_called_check_bool_signal(
-    dut_check_bool_signal_call_arguments_list, port, port_name):
-    '''Verify that `dut_check_bool_signal_call_arguments_list` contains a call
-    to `check_bool_signal` with the correct `port` and `port_name`.
-
-    `dut_check_bool_signal_call_arguments_list` should be the list returned by
-    `get_dut_check_bool_signal_call_arguments`.
-    '''
-    dut_arguments_list = dut_check_bool_signal_call_arguments_list
-
-    # Set up the expected args and kwargs that the DUT should use when calling
-    # check_bool_signal.
-    expected_args = [port, port_name]
-    expected_kwargs = {}
-
-    # Normalise the expected call to check_bool_signal
+    # Normalise the expected call to the func
     expected_arguments = (
-        _normalise_call(check_bool_signal, expected_args, expected_kwargs))
+        _normalise_function_call_args(func, [], expected_args_dict))
 
-    # Check that the normalised expected arguments were actually called
+    # Check that the normalised expected arguments are in the
+    # dut_arguments_list
     if expected_arguments not in dut_arguments_list:
         raise AssertionError(
-            'The ' + port_name + ' signal has not been checked or the DUT '
-            'passed different arguments to check_bool_signal.')
+            'The ' + port_under_test_name + ' port check cannot be found. '
+            'Either this port has not been checked or the arguments used to '
+            'perform the check did not match the expected arguments '
+            'provided.')
 
-    # Get the index of the expected call
-    expected_call_index = dut_arguments_list.index(expected_arguments)
+    # Get a list of indices for all calls to func which were made with the
+    # expected_arguments
+    matching_call_indices = [
+        i for i, call_args in enumerate(dut_arguments_list)
+        if call_args == expected_arguments]
 
-    # Check that the check_bool_signal was called with the correct signal.
-    if dut_arguments_list[expected_call_index]['test_signal'] is not port:
+    # Check that the expected call was only made once
+    if len(matching_call_indices) != 1:
         raise AssertionError(
-            'The ' + port_name + ' signal was not the signal in the call to '
-            'check_bool_signal.')
+            'The ' + port_under_test_name + ' port has been checked multiple '
+            'times.')
 
-def verify_dut_called_check_intbv_signal(
-    dut_check_intbv_signal_call_arguments_list, port, port_name,
-    bitwidth=None, signed=None, val_range=None, range_test=None):
-    '''Verify that `dut_check_intbv_signal_call_arguments_list` contains a
-    call to `check_intbv_signal` with the correct `port` and `port_name`.
+    # Extract the argumnets used in the matching call
+    matching_call_args = (
+        dut_function_call_arguments_list[matching_call_indices[0]])
 
-    `dut_check_intbv_signal_call_arguments_list` should be the list returned by
-    `get_dut_check_intbv_signal_call_arguments`.
-    '''
-    dut_arguments_list = dut_check_intbv_signal_call_arguments_list
+    # Extract the port used in the matching call
+    matching_call_port = matching_call_args[port_under_test_arg_name]
 
-    # Set up the expected args and kwargs that the DUT should use when calling
-    # check_intbv_signal.
-    expected_args = [port, port_name]
+    # Extract the port which the DUT should have checked
+    expected_port = expected_args_dict[port_under_test_arg_name]
 
-    potential_expected_args = {
-        'bitwidth': bitwidth,
-        'signed': signed,
-        'val_range': val_range,
-        'range_test': range_test,
-    }
-
-    expected_kwargs = {
-        k: v for k, v in potential_expected_args.items() if v is not None}
-
-    # Normalise the expected call to check_intbv_signal
-    expected_arguments = (
-        _normalise_call(check_intbv_signal, expected_args, expected_kwargs))
-
-    # Check that the normalised expected arguments were actually called
-    if expected_arguments not in dut_arguments_list:
+    # Check that the func was called with the correct signal.
+    if matching_call_port is not expected_port:
         raise AssertionError(
-            'The ' + port_name + ' signal has not been checked or the DUT '
-            'passed different arguments to check_bool_signal.')
-
-    # Get the index of the expected call
-    expected_call_index = dut_arguments_list.index(expected_arguments)
-
-    # Check that the check_intbv_signal was called with the correct signal.
-    if dut_arguments_list[expected_call_index]['test_signal'] is not port:
-        raise AssertionError(
-            'The ' + port_name + ' signal was not the signal in the call to '
-            'check_intbv_signal.')
+            'The ' + port_under_test_name + ' port was not the object passed '
+            'to the specified check function.')
