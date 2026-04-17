@@ -7,22 +7,30 @@ from myhdl import Signal, intbv, block, always
 from kea.testing.test_utils import (
     KeaTestCase, KeaVivadoVHDLTestCase, KeaVivadoVerilogTestCase,
     generate_value)
+from kea.utils.interface_checks import (
+    check_bool_or_intbv_signal,
+    check_bool_signal,
+    check_intbv_signal,
+    get_dut_function_call_arguments,
+    verify_dut_called_function)
 
 from ._register_pipeline import register_pipeline
 
-def dut_args_setup(data_bitwidth, n_stages):
+def dut_args_setup(signal_factory, n_stages):
     ''' Generate the arguments and argument types for the DUT.
     '''
 
-    assert(data_bitwidth > 0)
     assert(n_stages > 0)
+
+    source_data = signal_factory()
+    sink_data = signal_factory()
 
     dut_args = {
         'clock': Signal(False),
         'reset': Signal(False),
         'enable': Signal(False),
-        'source_data': Signal(intbv(0)[data_bitwidth:]),
-        'sink_data': Signal(intbv(0)[data_bitwidth:]),
+        'source_data': source_data,
+        'sink_data': sink_data,
         'n_stages': n_stages,
     }
 
@@ -40,10 +48,11 @@ def dut_args_setup(data_bitwidth, n_stages):
 class TestRegisterPipelineInterface(KeaTestCase):
 
     def setUp(self):
-        data_bitwidth = 1
+        signal_factory = lambda: Signal(intbv(0)[8:])
         n_stages = 4
+
         self.dut_args, _dut_arg_types = (
-            dut_args_setup(data_bitwidth, n_stages))
+            dut_args_setup(signal_factory, n_stages))
 
     def test_zero_n_stages(self):
         ''' The `register_pipeline` should raise an error if `n_stages` is
@@ -71,47 +80,101 @@ class TestRegisterPipelineInterface(KeaTestCase):
             **self.dut_args,
         )
 
-    def test_invalid_sink_max_value(self):
-        ''' The `register_pipeline` should raise an error if the
-        `sink_data.max` is less than `source_data.max`.
+    def test_bool_or_intbv_ports_checked(self):
+        '''The `source_data` port should be a boolean or intbv signal.
+
+        Anything else should raise an error.
         '''
-        max_values = random.sample(range(1, 1029), 2)
-        source_data_max = max(max_values)
-        sink_data_max = min(max_values)
+        dut = register_pipeline
+        port_names = ['source_data']
 
-        self.dut_args['source_data'] = (
-            Signal(intbv(0, min=0, max=source_data_max)))
-        self.dut_args['sink_data'] = (
-            Signal(intbv(0, min=0, max=sink_data_max)))
+        # Get all calls to check_bool_signal made by the DUT
+        dut_function_call_arguments_list = (
+            get_dut_function_call_arguments(
+                check_bool_or_intbv_signal, dut, self.dut_args))
 
-        self.assertRaisesRegex(
-            ValueError,
-            ('register_pipeline: sink_data.max should be greater than or '
-             'equal to source_data.max.'),
-            register_pipeline,
-            **self.dut_args,
-        )
+        for port_name in port_names:
+            expected_args_dict = {
+                'test_signal': self.dut_args[port_name],
+                'name': port_name,
+            }
 
-    def test_invalid_sink_min_value(self):
-        ''' The `register_pipeline` should raise an error if the
-        `sink_data.min` is greater than `source_data.min`.
+            # Check that the specified port was checked
+            verify_dut_called_function(
+                check_bool_or_intbv_signal, dut_function_call_arguments_list,
+                expected_args_dict, 'test_signal', port_name)
+
+    def test_intbv_ports_checked(self):
+        '''If the `source_data` port is an `intbv` signal then the
+        `sink_data` should be an `intbv` with a matching data range.
+
+        Anything else should raise an error.
         '''
-        min_values = random.sample(range(-1028, 1), 2)
-        source_data_min = min(min_values)
-        sink_data_min = max(min_values)
+        upper_bound = 2**random.randrange(1, 17)
+        lower_bound = -upper_bound
 
-        self.dut_args['source_data'] = (
-            Signal(intbv(0, min=source_data_min, max=1)))
-        self.dut_args['sink_data'] = (
-            Signal(intbv(0, min=sink_data_min, max=1)))
+        signal_factory = lambda: Signal(intbv(0, lower_bound, upper_bound))
+        n_stages = 4
 
-        self.assertRaisesRegex(
-            ValueError,
-            ('register_pipeline: sink_data.min should be less than or equal '
-             'to source_data.min.'),
-            register_pipeline,
-            **self.dut_args,
-        )
+        self.dut_args, _dut_arg_types = (
+            dut_args_setup(signal_factory, n_stages))
+
+        dut = register_pipeline
+        intbv_port_requirements = {
+            'sink_data': {
+                'val_range': (lower_bound, upper_bound),
+                'range_test': 'exact',
+            },
+        }
+
+        # Get all calls to check_intbv_signal made by the DUT
+        dut_function_call_arguments_list = (
+            get_dut_function_call_arguments(
+                check_intbv_signal, dut, self.dut_args))
+
+        for port_name in intbv_port_requirements:
+            # Assemble the args that should have been passed to
+            # check_intbv_signal
+            expected_args_dict = intbv_port_requirements[port_name]
+            expected_args_dict['test_signal'] = self.dut_args[port_name]
+            expected_args_dict['name'] =  port_name
+
+            # Check that the specified port was checked
+            verify_dut_called_function(
+                check_intbv_signal, dut_function_call_arguments_list,
+                expected_args_dict, 'test_signal', port_name)
+
+    def test_bool_ports_checked(self):
+        '''If the `source_data` port is a boolean signal then the `sink_data`
+        port should be a boolean signal.
+
+        Anything else should raise an error.
+        '''
+
+        signal_factory = lambda: Signal(False)
+        n_stages = 4
+
+        self.dut_args, _dut_arg_types = (
+            dut_args_setup(signal_factory, n_stages))
+
+        dut = register_pipeline
+        bool_port_names = ['sink_data']
+
+        # Get all calls to check_bool_signal made by the DUT
+        dut_function_call_arguments_list = (
+            get_dut_function_call_arguments(
+                check_bool_signal, dut, self.dut_args))
+
+        for port_name in bool_port_names:
+            expected_args_dict = {
+                'test_signal': self.dut_args[port_name],
+                'name': port_name,
+            }
+
+            # Check that the specified port was checked
+            verify_dut_called_function(
+                check_bool_signal, dut_function_call_arguments_list,
+                expected_args_dict, 'test_signal', port_name)
 
 class TestRegisterPipeline(KeaTestCase):
 
@@ -126,8 +189,14 @@ class TestRegisterPipeline(KeaTestCase):
 
         return_objects = []
 
-        data_lower_bound = source_data.min
-        data_upper_bound = source_data.max
+        if isinstance(source_data.val, intbv):
+            data_lower_bound = source_data.min
+            data_upper_bound = source_data.max
+
+            intbv_signal = True
+
+        else:
+            intbv_signal = False
 
         @always(clock.posedge)
         def stim():
@@ -148,8 +217,13 @@ class TestRegisterPipeline(KeaTestCase):
                 if random.random() < 0.08:
                     enable.next = True
 
-            source_data.next = (
-                generate_value(data_lower_bound, data_upper_bound, 0.1, 0.1))
+            if intbv_signal:
+                source_data.next = (
+                    generate_value(
+                        data_lower_bound, data_upper_bound, 0.1, 0.1))
+
+            else:
+                source_data.next = bool(random.randrange(2))
 
         return_objects.append(stim)
 
@@ -169,7 +243,12 @@ class TestRegisterPipeline(KeaTestCase):
 
         return_objects = []
 
-        expected_sink_data = Signal(intbv(0)[len(sink_data):])
+        if isinstance(source_data.val, intbv):
+            expected_sink_data = (
+                Signal(intbv(0, source_data.min, source_data.max)))
+
+        else:
+            expected_sink_data = Signal(False)
 
         if n_stages > 1:
             pipeline_len = n_stages-1
@@ -204,9 +283,9 @@ class TestRegisterPipeline(KeaTestCase):
 
         return return_objects
 
-    def base_test(self, data_bitwidth, n_stages):
+    def base_test(self, signal_factory, n_stages):
 
-        dut_args, dut_arg_types = dut_args_setup(data_bitwidth, n_stages)
+        dut_args, dut_arg_types = dut_args_setup(signal_factory, n_stages)
 
         if not self.testing_using_vivado:
             cycles = 5000
@@ -230,7 +309,7 @@ class TestRegisterPipeline(KeaTestCase):
 
         self.assertEqual(dut_outputs, ref_outputs)
 
-    def test_one_bit_data(self):
+    def test_bool_data(self):
         ''' The `register_pipeline` should instantiate a pipeline of
         `n_stages`.
 
@@ -243,17 +322,20 @@ class TestRegisterPipeline(KeaTestCase):
         Note: `n_stages` can also be considered the number of cycles between
         `source_data` being clocked in to the `register_pipeline` and it being
         assigned to `sink_data`
+
+        The `register_pipeline` should function correctly when the
+        `source_data` and `sink_data` are boolean signals.
         '''
         self.base_test(
-            data_bitwidth=1,
+            signal_factory=lambda: Signal(False),
             n_stages=4)
 
-    def test_two_bit_data(self):
+    def test_one_bit_data(self):
         ''' The `register_pipeline` should function correctly when the
-        `source_data` and `sink_data` are 2 bits wide.
+        `source_data` and `sink_data` are 1 bit wide `intbv` signals.
         '''
         self.base_test(
-            data_bitwidth=2,
+            signal_factory=lambda: Signal(intbv(0)[1:]),
             n_stages=4)
 
     def test_random_bitwidth_data(self):
@@ -262,7 +344,49 @@ class TestRegisterPipeline(KeaTestCase):
         '''
         data_bitwidth = random.randrange(2, 17)
         self.base_test(
-            data_bitwidth=data_bitwidth,
+            signal_factory=lambda: Signal(intbv(0)[data_bitwidth:]),
+            n_stages=4)
+
+    def test_one_bit_unsigned_data(self):
+        ''' The `register_pipeline` should function correctly when the
+        `source_data` and `sink_data` are 1 bit wide unsigned `intbv` signals.
+        '''
+        self.base_test(
+            signal_factory=lambda: Signal(intbv(0, 0, 2)),
+            n_stages=4)
+
+    def test_random_bitwidth_unsigned_data(self):
+        ''' The `register_pipeline` should function correctly when the
+        `source_data` and `sink_data` are n bit wide unsigned `intbv` signals.
+        '''
+        data_bitwidth = random.randrange(2, 17)
+        data_upper_bound = 2**(data_bitwidth-1)
+        data_lower_bound = 0
+
+        self.base_test(
+            signal_factory=(
+                lambda: Signal(intbv(0, data_lower_bound, data_upper_bound))),
+            n_stages=4)
+
+    def test_one_bit_signed_data(self):
+        ''' The `register_pipeline` should function correctly when the
+        `source_data` and `sink_data` are 1 bit wide signed `intbv` signals.
+        '''
+        self.base_test(
+            signal_factory=lambda: Signal(intbv(0, -1, 1)),
+            n_stages=4)
+
+    def test_random_bitwidth_signed_data(self):
+        ''' The `register_pipeline` should function correctly when the
+        `source_data` and `sink_data` are n bit wide signed `intbv` signals.
+        '''
+        data_bitwidth = random.randrange(2, 17)
+        data_upper_bound = 2**(data_bitwidth-1)
+        data_lower_bound = -data_upper_bound
+
+        self.base_test(
+            signal_factory=(
+                lambda: Signal(intbv(0, data_lower_bound, data_upper_bound))),
             n_stages=4)
 
     def test_one_stage(self):
@@ -273,7 +397,7 @@ class TestRegisterPipeline(KeaTestCase):
         `source_data` to `sink_data` on the next rising edge of `clock`.
         '''
         self.base_test(
-            data_bitwidth=4,
+            signal_factory=lambda: Signal(intbv(0)[4:]),
             n_stages=1)
 
     def test_two_stages(self):
@@ -281,7 +405,7 @@ class TestRegisterPipeline(KeaTestCase):
         `n_stages` is set to 2.
         '''
         self.base_test(
-            data_bitwidth=4,
+            signal_factory=lambda: Signal(intbv(0)[4:]),
             n_stages=2)
 
     def test_random_n_stages(self):
@@ -290,7 +414,7 @@ class TestRegisterPipeline(KeaTestCase):
         '''
         n_stages = random.randrange(3, 9)
         self.base_test(
-            data_bitwidth=4,
+            signal_factory=lambda: Signal(intbv(0)[4:]),
             n_stages=n_stages)
 
 class TestRegisterPipelineVivadoVHDL(
