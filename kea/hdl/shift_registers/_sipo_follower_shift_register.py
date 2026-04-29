@@ -1,6 +1,6 @@
 from myhdl import block, Signal, intbv, always_seq, ResetSignal
 
-from kea.hdl.signal_handling import signal_assigner
+from kea.hdl.signal_handling import sig_assigner
 
 @block
 def sipo_follower_shift_register(
@@ -29,10 +29,10 @@ def sipo_follower_shift_register(
     shift_reg = Signal(intbv(0)[parallel_data_bitwidth:0])
 
     sr_nreset = ResetSignal(0, active=0, isasync=True)
-    return_objects.append(signal_assigner(shift_reg_nreset, sr_nreset))
+    return_objects.append(sig_assigner(shift_reg_nreset, sr_nreset))
 
     po_nreset = ResetSignal(0, active=0, isasync=True)
-    return_objects.append(signal_assigner(parallel_out_nreset, po_nreset))
+    return_objects.append(sig_assigner(parallel_out_nreset, po_nreset))
 
     @always_seq(serial_clock.posedge, reset=sr_nreset)
     def shift():

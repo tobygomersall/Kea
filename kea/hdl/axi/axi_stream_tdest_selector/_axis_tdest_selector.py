@@ -2,7 +2,7 @@ from myhdl import block, always, enum, Signal
 
 from kea.hdl.axi import AxiStreamInterface
 from kea.hdl.axi.axi_stream_utils import check_axi_stream_interface_attributes
-from kea.hdl.signal_handling import signal_assigner
+from kea.hdl.signal_handling import sig_assigner
 
 @block
 def axis_tdest_selector(
@@ -63,13 +63,13 @@ def axis_tdest_selector(
 
     # Connect the axis source signals to the axis sink signals
     return_objects.append(
-        signal_assigner(axis_source.TVALID, axis_sink.TVALID))
+        sig_assigner(axis_source.TVALID, axis_sink.TVALID))
     return_objects.append(
-        signal_assigner(axis_source.TDATA, axis_sink.TDATA))
+        sig_assigner(axis_source.TDATA, axis_sink.TDATA))
     return_objects.append(
-        signal_assigner(axis_sink.TREADY, axis_source.TREADY))
+        sig_assigner(axis_sink.TREADY, axis_source.TREADY))
     return_objects.append(
-        signal_assigner(axis_source.TLAST, axis_sink.TLAST))
+        sig_assigner(axis_source.TLAST, axis_sink.TLAST))
 
     t_state = enum('NO_PACKET_IN_PROGRESS', 'PACKET_IN_PROGRESS')
     state = Signal(t_state.NO_PACKET_IN_PROGRESS)

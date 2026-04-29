@@ -1,7 +1,7 @@
 from myhdl import block, Signal, intbv
 
 from kea.hdl.signal_handling import (
-    signal_assigner, combined_signal_assigner, signal_slicer)
+    sig_assigner, combined_signal_assigner, signal_slicer)
 
 from ._variable_width_and import variable_width_and
 
@@ -46,7 +46,7 @@ def vector_and(output, input_signals):
 
     if len(input_signals) == 1:
         # Only one input signal so connect it to the output
-        return_objects.append(signal_assigner(input_signals[0], output))
+        return_objects.append(sig_assigner(input_signals[0], output))
 
     else:
         # Create a list of signals to carry the result of each bitwise AND

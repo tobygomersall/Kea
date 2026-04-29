@@ -83,7 +83,7 @@ def signed_sig_assigner_wrapper(clock, signal_in, signal_out):
     return signed_sig_assigner(signal_in, signal_out)
 
 class TestSignedSigAssignerInterface(KeaTestCase):
-    ''' The signal_assigner should reject incompatible interfaces and
+    ''' The signed_sig_assigner should reject incompatible interfaces and
     arguments.
     '''
 

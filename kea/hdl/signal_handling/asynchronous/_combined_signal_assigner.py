@@ -1,6 +1,6 @@
 from myhdl import block, ConcatSignal
 
-from ._signal_assigner import signal_assigner
+from .sig_assigner_block._sig_assigner import sig_assigner
 
 @block
 def combined_signal_assigner(input_signals, signal_out):
@@ -43,8 +43,6 @@ def combined_signal_assigner(input_signals, signal_out):
         signal_in = ConcatSignal(*reversed(input_signals))
 
     # Drive the signal_out with the combined input_signals
-    return_objects.append(
-        signal_assigner(
-            signal_in, signal_out, offset=0, convert_to_signed=False))
+    return_objects.append(sig_assigner(signal_in, signal_out))
 
     return return_objects

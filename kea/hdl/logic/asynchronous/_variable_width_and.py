@@ -1,7 +1,7 @@
 from myhdl import ConcatSignal, block, always_comb, Signal, intbv
 from math import ceil
 
-from kea.hdl.signal_handling import signal_assigner
+from kea.hdl.signal_handling import sig_assigner
 
 from ._reducing_and import reducing_and
 
@@ -30,7 +30,7 @@ def variable_width_and(output, input_signals):
 
     if n_signals == 1:
         # Only one input signal
-        return_objects.append(signal_assigner(input_signals[0], output))
+        return_objects.append(sig_assigner(input_signals[0], output))
 
     else:
         # Combine all of the input signals into one signal

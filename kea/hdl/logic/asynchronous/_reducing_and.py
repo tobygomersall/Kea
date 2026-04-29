@@ -1,6 +1,6 @@
 from myhdl import block, always_comb, Signal, intbv
 
-from kea.hdl.signal_handling import signal_assigner
+from kea.hdl.signal_handling import sig_assigner
 
 from ._vector_not import vector_not
 
@@ -22,7 +22,7 @@ def reducing_and(output, input_signal):
     input_bitwidth = len(input_signal)
 
     if input_bitwidth == 1:
-        return_objects.append(signal_assigner(input_signal, output))
+        return_objects.append(sig_assigner(input_signal, output))
 
     else:
         # As we are ANDing signals we can simply not the input signal and
