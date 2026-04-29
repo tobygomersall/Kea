@@ -1,7 +1,7 @@
 from myhdl import block, always_comb, always, Signal
 
 from kea.hdl.axi import AxiStreamInterface
-from kea.hdl.signal_handling import signal_assigner
+from kea.hdl.signal_handling import sig_assigner
 
 @block
 def axis_signal_buffer(
@@ -70,9 +70,9 @@ def axis_buffer(clock, reset, axis_source, axis_sink):
     # Connect the internal source tready and sink tvalid signals to their
     # axis interface counterparts
     return_objects.append(
-        signal_assigner(axis_source_tready, axis_source.TREADY))
+        sig_assigner(axis_source_tready, axis_source.TREADY))
     return_objects.append(
-        signal_assigner(axis_sink_tvalid, axis_sink.TVALID))
+        sig_assigner(axis_sink_tvalid, axis_sink.TVALID))
 
     # Buffer TDATA
     return_objects.append(

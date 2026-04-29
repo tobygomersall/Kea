@@ -4,7 +4,7 @@ import random
 from myhdl import block, Signal, intbv, enum, always, StopSimulation
 
 from kea.hdl.shift_registers import piso_shift_register
-from kea.hdl.signal_handling import signal_assigner
+from kea.hdl.signal_handling import sig_assigner
 from kea.testing.test_utils.base_test import (
     KeaTestCase, KeaVivadoVHDLTestCase, KeaVivadoVerilogTestCase)
 from kea.testing.test_utils import generate_value
@@ -441,9 +441,9 @@ class TestPisoToSynchronousSipoFollower(TestSynchronousSipoFollower):
         # Connect piso_data_out_nreset to shift_reg_nreset and
         # parallel_out_nreset
         return_objects.append(
-            signal_assigner(piso_data_out_nreset, shift_reg_nreset))
+            sig_assigner(piso_data_out_nreset, shift_reg_nreset))
         return_objects.append(
-            signal_assigner(piso_data_out_nreset, parallel_out_nreset))
+            sig_assigner(piso_data_out_nreset, parallel_out_nreset))
 
         pending_parallel_data = Signal(intbv(0)[parallel_data_bitwidth:])
         expected_parallel_data = Signal(intbv(0)[parallel_data_bitwidth:])

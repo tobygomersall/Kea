@@ -3,7 +3,7 @@ from myhdl import block, Signal, intbv, always, enum, modbv
 
 from kea.hdl.axi import AxiLiteInterface, axi_lite
 from kea.hdl.signal_handling.asynchronous import (
-    signal_assigner, signal_slicer)
+    sig_assigner, signal_slicer, constant_assigner)
 
 from ._registers import Registers, Bitfields
 
@@ -128,12 +128,12 @@ def axi_lite_handler(
             # The register should be written by this block in response to AXI
             # write transactions.
             return_objects.append(
-                signal_assigner(write_signal, interface_register))
+                sig_assigner(write_signal, interface_register))
 
             # The register should be read by this block in response to AXI
             # read transactions. The read signal should track the write
             # signal.
-            return_objects.append(signal_assigner(write_signal, read_signal))
+            return_objects.append(sig_assigner(write_signal, read_signal))
 
             # I tried multiple techniques to record which registers are write
             # only (using a ROM, Signal(False) etc). This specific combination
@@ -149,7 +149,7 @@ def axi_lite_handler(
             # The register should be read by this block in response to AXI
             # read transactions. The read signal should track the register.
             return_objects.append(
-                signal_assigner(interface_register, read_signal))
+                sig_assigner(interface_register, read_signal))
 
             # I tried multiple techniques to record which registers are write
             # only (using a ROM, Signal(False) etc). This specific combination
@@ -162,12 +162,12 @@ def axi_lite_handler(
             # The register should be written by this block in response to AXI
             # write transactions.
             return_objects.append(
-                signal_assigner(write_signal, interface_register))
+                sig_assigner(write_signal, interface_register))
 
-            # The read signal should not be used. Set driven to `reg` to
-            # supress the Myhdl conversion warning that the signal is not
-            # driven
-            read_signal.driven = 'reg'
+            # Drive the read_signal with the reg_initial_val. This is a write
+            # only register so the read signal should never change.
+            return_objects.append(
+                constant_assigner(reg_initial_val, read_signal))
 
             # I tried multiple techniques to record which registers are write
             # only (using a ROM, Signal(False) etc). This specific combination

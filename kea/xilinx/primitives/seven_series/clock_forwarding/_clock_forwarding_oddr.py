@@ -2,7 +2,7 @@ from math import ceil
 from myhdl import block, Signal, intbv, enum, always
 
 from kea.hdl.logic.asynchronous import and_gate
-from kea.hdl.signal_handling import constant_assigner, signal_assigner
+from kea.hdl.signal_handling import constant_assigner, sig_assigner
 from kea.xilinx.primitives.seven_series import xil_oddr
 
 @block
@@ -38,7 +38,7 @@ def clock_forwarding_oddr(
 
     # Keep a copy of initialised for internal use
     internal_initialised = Signal(False)
-    return_objects.append(signal_assigner(internal_initialised, initialised))
+    return_objects.append(sig_assigner(internal_initialised, initialised))
 
     # Create an ODDR block to drive the forwarded_clock. This is the
     # recommended method for forwarding a clock. The ODDR block alternates

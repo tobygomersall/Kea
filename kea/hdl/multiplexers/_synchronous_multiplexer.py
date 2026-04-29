@@ -1,6 +1,6 @@
 from myhdl import block, always, Signal, intbv
 
-from kea.hdl.signal_handling import signal_assigner
+from kea.hdl.signal_handling import sig_assigner
 
 from .interfaces import MultiplexerInputInterface
 
@@ -36,7 +36,7 @@ def synchronous_multiplexer(clock, input_interface, output_signal, select):
     # input_interface.n_signals. VHDL cannot perform a less than check between
     # a bool and an int (if select is a bool signal).
     internal_select = Signal(intbv(0)[len(select):])
-    return_objects.append(signal_assigner(select, internal_select))
+    return_objects.append(sig_assigner(select, internal_select))
 
     @always(clock.posedge)
     def mux():

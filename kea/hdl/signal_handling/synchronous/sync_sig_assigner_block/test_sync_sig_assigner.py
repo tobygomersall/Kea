@@ -76,7 +76,7 @@ def dut_args_setup(
     return args, arg_types
 
 class TestSyncSigAssignerInterface(KeaTestCase):
-    ''' The signal_assigner should reject incompatible interfaces and
+    ''' The sync_sig_assigner should reject incompatible interfaces and
     arguments.
     '''
 

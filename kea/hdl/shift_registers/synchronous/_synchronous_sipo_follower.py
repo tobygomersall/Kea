@@ -1,6 +1,6 @@
 from myhdl import block, Signal, intbv, always
 
-from kea.hdl.signal_handling import synchronous_signal_assigner
+from kea.hdl.signal_handling import sync_sig_assigner
 
 @block
 def synchronous_sipo_follower(
@@ -24,11 +24,11 @@ def synchronous_sipo_follower(
     # Keep a record of serial_clock so we can detect edges
     serial_clock_d0 = Signal(False)
     return_objects.append(
-        synchronous_signal_assigner(clock, serial_clock, serial_clock_d0))
+        sync_sig_assigner(clock, serial_clock, serial_clock_d0))
 
     # Keep a record of latch so we can detect edges
     latch_d0 = Signal(False)
-    return_objects.append(synchronous_signal_assigner(clock, latch, latch_d0))
+    return_objects.append(sync_sig_assigner(clock, latch, latch_d0))
 
     shift_reg = Signal(intbv(0)[parallel_data_bitwidth:0])
 

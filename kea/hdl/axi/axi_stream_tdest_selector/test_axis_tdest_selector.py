@@ -519,7 +519,7 @@ class TestAxisTDestSelector(KeaTestCase):
         self, randomise_axis_control_signals=False,
         n_samples_per_packet_upper_bound=65, stim_reset=False):
 
-        cycles = 15000
+        cycles = 30000
         n_tests = 20
 
         dut_args, dut_arg_types = dut_args_setup()

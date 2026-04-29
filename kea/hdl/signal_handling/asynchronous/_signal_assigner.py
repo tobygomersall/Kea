@@ -1,5 +1,7 @@
 from myhdl import *
 
+import warnings
+
 @block
 def boolean_signal_assigner(signal_in, signal_out):
 
@@ -36,6 +38,13 @@ def signal_assigner(signal_in, signal_out, offset=0, convert_to_signed=False):
     If convert_to_signed is true, then this block will convert the input to a
     signed value as part of the assignment.
     '''
+
+    warnings.warn(
+        ('signal_assigner is deprecated, use sig_assigner or '
+         'signed_sig_assigner.'),
+        DeprecationWarning,
+        stacklevel=2
+    )
 
     if len(signal_out) < len(signal_in) + offset:
         raise ValueError(

@@ -1,7 +1,7 @@
 from myhdl import block, Signal, intbv, enum, always
 
 from kea.hdl.cdc import double_buffer
-from kea.hdl.signal_handling import signal_assigner
+from kea.hdl.signal_handling import sig_assigner
 
 @block
 def aurora_64b_66b_control(
@@ -42,9 +42,9 @@ def aurora_64b_66b_control(
     pma_init_internal = Signal(True)
     ready_internal = Signal(False)
 
-    return_objects.append(signal_assigner(reset_pb_internal, reset_pb))
-    return_objects.append(signal_assigner(pma_init_internal, pma_init))
-    return_objects.append(signal_assigner(ready_internal, ready))
+    return_objects.append(sig_assigner(reset_pb_internal, reset_pb))
+    return_objects.append(sig_assigner(pma_init_internal, pma_init))
+    return_objects.append(sig_assigner(ready_internal, ready))
 
     reset_pb_n_cycles = 128
     reset_pb_count_threshold = reset_pb_n_cycles-1

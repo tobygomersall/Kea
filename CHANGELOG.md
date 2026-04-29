@@ -3,6 +3,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.12.1 - 2026-04-29
+
+### Changed
+
+- Signal assigner updates
+    - Added an deprecation warning to the `signal_assiger` in `kea/hdl/signal_handling/asynchronous`.
+    - Added an deprecation warning to the `synchronous_signal_assiger` in `kea/hdl/signal_handling/synchronous`.
+    - Replaced the deprecated blocks.
+    - These changes do not affect behaviour.
+
 ## 0.12.0 - 2026-04-17
 
 ### Changed
