@@ -210,8 +210,7 @@ def synchronous_saturating_rounding_slicer(
         fractional_slice = Signal(intbv(0)[slice_offset:])
         return_objects.append(
             signal_slicer(
-                signal_in, fractional_slice_offset, fractional_slice_bitwidth,
-                fractional_slice))
+                signal_in, fractional_slice_offset, fractional_slice))
 
         # The integer_slice is all the bits remaining after taking off the
         # fractional bits.
@@ -233,9 +232,7 @@ def synchronous_saturating_rounding_slicer(
                 0, min=integer_slice_lower_bound,
                 max=integer_slice_upper_bound)))
         return_objects.append(
-            signal_slicer(
-                signal_in, slice_offset, integer_slice_bitwidth,
-                integer_slice))
+            signal_slicer(signal_in, slice_offset, integer_slice))
 
         signal_out_upper_saturation = signal_out_upper_bound - 1
         signal_out_lower_saturation = signal_out_lower_bound

@@ -196,42 +196,37 @@ def axi_lite_handler(
     wr_byte_addr = Signal(intbv(0)[byte_addr_bitwidth:])
     return_objects.append(
         signal_slicer(
-            axi_lite_interface.AWADDR, 0, byte_addr_bitwidth,
-            wr_byte_addr))
+            axi_lite_interface.AWADDR, 0, wr_byte_addr))
 
     # Extract the word address from the AWADDR signal
     wr_word_addr = Signal(intbv(0)[word_addr_bitwidth:])
     return_objects.append(
         signal_slicer(
-            axi_lite_interface.AWADDR, byte_addr_bitwidth, word_addr_bitwidth,
-            wr_word_addr))
+            axi_lite_interface.AWADDR, byte_addr_bitwidth, wr_word_addr))
 
     # Extract the byte address from the wr_addr_buffer
     wr_byte_addr_buffer = Signal(intbv(0)[byte_addr_bitwidth:])
     return_objects.append(
         signal_slicer(
-            wr_addr_buffer, 0, byte_addr_bitwidth, wr_byte_addr_buffer))
+            wr_addr_buffer, 0, wr_byte_addr_buffer))
 
     # Extract the word address from the wr_addr_buffer
     wr_word_addr_buffer = Signal(intbv(0)[word_addr_bitwidth:])
     return_objects.append(
         signal_slicer(
-            wr_addr_buffer, byte_addr_bitwidth, word_addr_bitwidth,
-            wr_word_addr_buffer))
+            wr_addr_buffer, byte_addr_bitwidth, wr_word_addr_buffer))
 
     # Extract the byte address from the ARADDR signal
     rd_byte_addr = Signal(intbv(0)[byte_addr_bitwidth:])
     return_objects.append(
         signal_slicer(
-            axi_lite_interface.ARADDR, 0, byte_addr_bitwidth,
-            rd_byte_addr))
+            axi_lite_interface.ARADDR, 0, rd_byte_addr))
 
     # Extract the word address from the ARADDR signal
     rd_word_addr = Signal(intbv(0)[word_addr_bitwidth:])
     return_objects.append(
         signal_slicer(
-            axi_lite_interface.ARADDR, byte_addr_bitwidth, word_addr_bitwidth,
-            rd_word_addr))
+            axi_lite_interface.ARADDR, byte_addr_bitwidth, rd_word_addr))
 
     t_wr_state = enum(
         'IDLE', 'READY', 'ADDR_RECEIVED', 'DATA_RECEIVED', 'RESPOND')

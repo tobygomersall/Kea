@@ -60,7 +60,7 @@ def vector_and(output, input_signals):
             for input_sig, and_bit in zip(input_signals, and_bits):
                 # Extract bit n from each input signal and connect it to the
                 # AND input
-                return_objects.append(signal_slicer(input_sig, n, 1, and_bit))
+                return_objects.append(signal_slicer(input_sig, n, and_bit))
 
             # Bitwise AND bit n from the input signals
             return_objects.append(
