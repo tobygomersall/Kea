@@ -53,8 +53,7 @@ def test_args_setup():
     return args, arg_types
 
 class TestSynchronousMultiplexerInterface(KeaTestCase):
-    ''' The synchronous_signal_slicer should reject incompatible interfaces
-    and arguments.
+    ''' The DUT should reject incompatible interfaces and arguments.
     '''
 
     def setUp(self):

@@ -3,6 +3,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.13.1 - 2026-08-12
+
+### Changed
+
+- Refactored the `ethernet_framer` tests to provide a tool for higher level tests.
+
+## 0.13.0 - 2026-07-22
+
+### Changed
+
+- Modified the `kea/hdl/signal_handling/asynchronous/_signal_slicer` and `kea/hdl/signal_handling/synchronous/_synchronous_signal_slicer` so it uses the bitwidth of `signal_out` as the slice bitwidth rather than taking `slice_bitwidth` as an argument. The behaviour of the block hasn't changed (it used to require `slice_bitwidth` equalled the bitwidth of `signal_out`.
+    - Updated all instances of the `signal_slicer` and `synchronous_signal_slicer` in kea.
+
+### Added
+
+- Added an `axi_stream_chunker`.
+- Added an `ethernet_framer`.
+- Added an `ethernet_monitor`.
+- Added an asynchronous `left_shift_block`.
+
 ## 0.12.1 - 2026-04-29
 
 ### Changed

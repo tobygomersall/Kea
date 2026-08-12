@@ -35,7 +35,6 @@ def de_concatenator(signal_in, output_interface):
 
         return_objects.append(
             signal_slicer(
-                signal_in, slice_offset, output_signal_bitwidth,
-                output_interface.signal_n(n)))
+                signal_in, slice_offset, output_interface.signal_n(n)))
 
     return return_objects

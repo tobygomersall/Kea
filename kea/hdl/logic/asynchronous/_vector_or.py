@@ -60,7 +60,7 @@ def vector_or(output, input_signals):
             for input_sig, or_bit in zip(input_signals, or_bits):
                 # Extract bit n from each input signal and connect it to the
                 # OR input
-                return_objects.append(signal_slicer(input_sig, n, 1, or_bit))
+                return_objects.append(signal_slicer(input_sig, n, or_bit))
 
             # Bitwise OR bit n from the input signals
             return_objects.append(variable_width_or(or_out_bits[n], or_bits))
