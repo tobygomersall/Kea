@@ -9,6 +9,7 @@ from .ethernet_constants import ETHERNET_HEADER_N_BITS
 from .test_utils import (
     ethernet_header_values_interface_types_generator,
     dut_args_setup,
+    generate_tkeep_trailing_bytes,
     BaseEthernetFramerInterfaceTests,
     BaseEthernetFramerTests)
 from ._multi_beat_framer import multi_beat_framer
@@ -115,11 +116,9 @@ class TestMultiBeatFramer(BaseEthernetFramerTests, KeaTestCase):
         n_header_words = ETHERNET_HEADER_N_BITS//len(axis_sink.TDATA)
         header_word_count = Signal(intbv(0, 0, n_header_words))
 
-        n_trailing_bits = ETHERNET_HEADER_N_BITS % len(axis_sink.TDATA)
-        n_trailing_bytes = n_trailing_bits//8
-
         keep_all_bytes = 2**len(axis_sink.TKEEP) - 1
-        keep_trailing_bytes = 2**n_trailing_bytes - 1
+        keep_trailing_bytes = (
+            generate_tkeep_trailing_bytes(len(axis_sink.TDATA)))
 
         expected_axis_sink_tvalid = Signal(False)
         expected_axis_sink_tlast = Signal(False)

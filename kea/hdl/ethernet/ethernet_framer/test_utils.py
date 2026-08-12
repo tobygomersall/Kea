@@ -124,6 +124,19 @@ def add_runs_of_none(
 
     return manipulated_packet
 
+def generate_tkeep_trailing_bytes(axis_sink_bitwdith):
+    ''' Generates the expected TKEEP for the last word of the packet.
+    '''
+
+    n_trailing_bits = ETHERNET_HEADER_N_BITS % axis_sink_bitwdith
+
+    assert(n_trailing_bits % 8 == 0)
+    n_trailing_bytes = n_trailing_bits//8
+
+    tkeep_trailing_bytes = 2**n_trailing_bytes - 1
+
+    return tkeep_trailing_bytes
+
 def generate_expected_packet(
     dest_mac_octets, src_mac_octets, ethertype, data, bytes_per_word):
     ''' Generates the expected packet.

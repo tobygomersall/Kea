@@ -8,6 +8,7 @@ from kea.testing.test_utils.base_test import (
 from .ethernet_constants import ETHERNET_HEADER_N_BITS
 from .test_utils import (
     dut_args_setup,
+    generate_tkeep_trailing_bytes,
     BaseEthernetFramerInterfaceTests,
     BaseEthernetFramerTests)
 from ._single_beat_framer import single_beat_framer
@@ -94,11 +95,9 @@ class TestSingleBeatFramer(BaseEthernetFramerTests, KeaTestCase):
         do_not_accept_data = Signal(False)
         last_sink_word_pending = Signal(False)
 
-        n_trailing_bits = ETHERNET_HEADER_N_BITS % len(axis_sink.TDATA)
-        n_trailing_bytes = n_trailing_bits//8
-
         keep_all_bytes = 2**len(axis_sink.TKEEP) - 1
-        keep_trailing_bytes = 2**n_trailing_bytes - 1
+        keep_trailing_bytes = (
+            generate_tkeep_trailing_bytes(len(axis_sink.TDATA)))
 
         expected_axis_sink_tvalid = Signal(False)
         expected_axis_sink_tlast = Signal(False)

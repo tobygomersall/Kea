@@ -10,4 +10,4 @@ from .ethernet_constants import (
 )
 from ._ethernet_framer import ethernet_framer
 from .interfaces import EthernetHeaderValuesInterface
-from .test_utils import extract_packet_fields
+from .test_utils import extract_packet_fields, generate_tkeep_trailing_bytes
