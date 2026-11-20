@@ -368,8 +368,6 @@ class BaseEthernetFramerInterfaceTests:
         )
 
 class BaseEthernetFramerTests:
-    ''' The DUT should reject incompatible interfaces and arguments.
-    '''
 
     dut_func = None
 
